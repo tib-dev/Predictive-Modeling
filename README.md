@@ -135,3 +135,47 @@ Insurance-Risk-Analytics/
 ├── README.md
 ├── .env
 └── .gitignore
+
+```
+
+## Architecture
+```text
++-------------------------+
+|  Raw Insurance Data     |
+|  (Policies & Claims)    |
++-----------+-------------+
+            |
+            v
++-------------------------+
+|  src/insurance_analytics/data/load_data.py
+|  Scripts: run_eda.sh
++-------------------------+
+            |
+            v
++-------------------------+
+|  src/insurance_analytics/preprocessing/cleaner.py
+|  src/insurance_analytics/preprocessing/feature_engineering.py
++-------------------------+
+            |
+            v
++-------------------------+
+|  data/processed/*.csv
++-------------------------+
+            |
+            v
++-------------------------+
+|  EDA: src/insurance_analytics/eda/*
+|  Visuals: src/insurance_analytics/viz/plots.py
++-------------------------+
+            |
+            v
++-------------------------+
+|  Models: src/insurance_analytics/models/*
+|  Evaluation & Interpretability
++-------------------------+
+            |
+            v
++-------------------------+
+|  Reports & Business Insights
++-------------------------+
+```
