@@ -70,112 +70,178 @@ AlphaCare Insurance Solutions aims to:
 ## Folder Structure
 
 ```text
-Insurance-Risk-Analytics/
-├── .github/
+ACIS-Insurance-Risk-Analytics/
+├── .github/                         # GitHub automation & CI/CD
 │   └── workflows/
-│       ├── ci.yml
-│       └── codeql.yml
-├── configs/
-│   ├── data.yaml
-│   └── modeling.yaml
-├── data/
-│   ├── raw/
-│   ├── interim/
-│   └── processed/
-├── docs/
-│   ├── README_project_overview.md
-│   ├── EDA_report_template.md
-│   └── Modeling_report_template.md
-├── notebooks/
-│   ├── eda/
-│   └── modeling/
-├── scripts/
-│   ├── run_eda.sh
-│   └── run_modeling.sh
-├── src/insurance_analytics/
+│       ├── ci.yml                   # Continuous Integration (unit tests, lint, smoke tests)
+│       └── codeql.yml               # Security/static analysis via CodeQL
+├── configs/                         # Configuration files for reproducible runs
+│   ├── data.yaml                    # Paths to raw/interim/processed datasets
+│   ├── modeling.yaml                # Model hyperparameters and training settings
+│   └── dvc_remote.yaml              # DVC remote storage configuration
+├── data/                             # All datasets; tracked with DVC for reproducibility
+│   ├── raw/                         # Original unprocessed CSVs or source files
+│   ├── interim/                     # Cleaned/partially processed files ready for analysis
+│   ├── processed/                   # Final datasets used for modeling
+│   └── postgres_exports/            # Exports or snapshots from PostgreSQL if needed
+├── docs/                             # Documentation for project methodology and outputs
+│   ├── README_project_overview.md   # High-level project description and objectives
+│   ├── eda_methodology.md           # Exploratory Data Analysis approaches
+│   ├── hypothesis_testing.md        # Statistical testing methodology
+│   ├── modeling_pipeline.md         # ML modeling steps and rationale
+│   ├── feature_engineering.md       # Features derived, transformations applied
+│   └── insights_report_template.md  # Template for final business insights report
+├── notebooks/                        # Interactive Jupyter notebooks
+│   ├── exploration/                  # EDA notebooks
+│   │   ├── data_overview.ipynb      # Data loading, initial summary statistics
+│   │   └── eda_visualizations.ipynb # Plots, distribution checks, temporal trends
+│   └── analysis/                     # Hypothesis testing & modeling
+│       ├── hypothesis_tests.ipynb   # A/B tests, chi-square, ANOVA, t-tests
+│       └── model_building.ipynb     # Feature prep, model training, evaluation
+├── reports/                          # Final deliverables
+│   ├── insight_report.md/           # Detailed analytics report with findings
+│   └── executive_summary.md/        # High-level recommendations for business
+├── scripts/                          # Standalone Python scripts for automation
 │   ├── __init__.py
-│   ├── config.py
-│   ├── data/
+│   ├── load_data.py                 # Load raw data into Python objects
+│   ├── clean_data.py                # Cleaning functions for missing/erroneous values
+│   ├── feature_engineering.py       # Derive new features for modeling
+│   ├── run_eda.py                   # Script to execute all EDA tasks
+│   ├── run_hypothesis_tests.py      # Run all statistical hypothesis tests
+│   ├── train_models.py              # Train machine learning models
+│   ├── predict_premiums.py          # Predict optimized premiums using trained models
+│   └── generate_report.py           # Generate final report in markdown or PDF
+├── src/acis_insurance_analytics/     # Core modular Python package
+│   ├── __init__.py
+│   ├── config.py                    # Centralized config management (paths, parameters)
+│   ├── data/                         # Data handling functions
 │   │   ├── __init__.py
-│   │   ├── load_data.py
-│   │   └── versioning.py
-│   ├── preprocessing/
+│   │   ├── loaders.py               # Load datasets from CSV/DVC/local DB
+│   │   └── cleaners.py              # Cleaning routines, missing value handling
+│   ├── features/                     # Feature engineering modules
 │   │   ├── __init__.py
-│   │   ├── cleaner.py
-│   │   └── feature_engineering.py
-│   ├── eda/
+│   │   └── build_features.py        # Generate derived features (vehicle_age, risk_flags)
+│   ├── models/                       # ML model building & inference
 │   │   ├── __init__.py
-│   │   ├── exploration.py
-│   │   └── visualization.py
-│   ├── models/
+│   │   ├── train.py                 # Train ML models (regression/classification)
+│   │   └── predict.py               # Use models to predict claims/premiums
+│   ├── hypothesis/                   # Statistical testing modules
 │   │   ├── __init__.py
-│   │   ├── linear_regression.py
-│   │   ├── random_forest.py
-│   │   ├── xgboost_model.py
-│   │   ├── evaluation.py
-│   │   └── interpretability.py
-│   ├── viz/
+│   │   ├── tests.py                 # Functions to perform A/B tests, chi-square, t-tests
+│   │   └── metrics.py               # KPI calculations: claim frequency, severity, margin
+│   ├── viz/                          # Visualization utilities
 │   │   ├── __init__.py
-│   │   └── plots.py
-│   └── utils/
+│   │   ├── plots.py                 # EDA and model performance plots
+│   │   └── dashboard.py             # Optional: assemble multiple plots into summary dashboards
+│   └── utils/                        # Utility functions
 │       ├── __init__.py
-│       ├── helpers.py
-│       └── io_utils.py
-├── tests/unit/
-│   ├── test_cleaner.py
-│   ├── test_feature_engineering.py
-│   ├── test_load_data.py
-│   └── test_models.py
-├── tests/integration/
-│   ├── test_eda_pipeline.py
-│   └── test_model_pipeline.py
-├── requirements.txt
-├── requirements-dev.txt
-├── pyproject.toml
-├── README.md
-├── .env
-└── .gitignore
+│       ├── helpers.py               # General helper functions
+│       ├── io_utils.py              # File I/O helpers
+│       └── stats_utils.py           # Statistical functions used across tests/models
+├── tests/                           # Unit & integration tests
+│   ├── unit/
+│   │   ├── test_loaders.py
+│   │   ├── test_cleaners.py
+│   │   ├── test_features.py
+│   │   ├── test_hypothesis.py
+│   │   └── test_models.py
+│   └── integration/
+│       ├── test_full_pipeline.py     # Test full flow from data to predictions
+│       └── test_dvc_integration.py   # Ensure DVC-tracked data reproducibility
+├── requirements.txt                  # Python dependencies for production
+├── requirements-dev.txt              # Additional dev/test dependencies
+├── pyproject.toml                    # Project metadata for packaging
+├── README.md                         # Project overview, instructions
+├── .env                              # Environment variables (DB creds, API keys)
+└── .gitignore                        # Ignore unnecessary files for git
 
 ```
 
 ## Architecture
 ```text
-+-------------------------+
-|  Raw Insurance Data     |
-|  (Policies & Claims)    |
-+-----------+-------------+
-            |
-            v
-+-------------------------+
-|  src/insurance_analytics/data/load_data.py
-|  Scripts: run_eda.sh
-+-------------------------+
-            |
-            v
-+-------------------------+
-|  src/insurance_analytics/preprocessing/cleaner.py
-|  src/insurance_analytics/preprocessing/feature_engineering.py
-+-------------------------+
-            |
-            v
-+-------------------------+
-|  data/processed/*.csv
-+-------------------------+
-            |
-            v
-+-------------------------+
-|  EDA: src/insurance_analytics/eda/*
-|  Visuals: src/insurance_analytics/viz/plots.py
-+-------------------------+
-            |
-            v
-+-------------------------+
-|  Models: src/insurance_analytics/models/*
-|  Evaluation & Interpretability
-+-------------------------+
-            |
-            v
-+-------------------------+
-|  Reports & Business Insights
-+-------------------------+
++------------------------------+
+|  Raw Insurance Data          |
+|  (Policies, Clients, Cars,   |
+|   Claims, Premiums)          |
+|  Location: data/raw/         |
++--------------+---------------+
+               |
+               v
++------------------------------+
+|  Data Loading & Initial Prep |
+|  src/acis_insurance_analytics/data/loaders.py
+|  Scripts: scripts/load_data.py
+|  - Load raw CSVs or database exports
+|  - Validate schema & datatypes
+|  - Initial missing value checks
++--------------+---------------+
+               |
+               v
++------------------------------+
+|  Data Cleaning & Feature Engineering |
+|  src/acis_insurance_analytics/data/cleaners.py
+|  src/acis_insurance_analytics/features/build_features.py
+|  Scripts: scripts/clean_data.py, scripts/feature_engineering.py
+|  - Handle missing/erroneous values
+|  - Derive features: vehicle age, claim flags, risk indicators
+|  - Encode categorical variables
+|  - Normalize/scale numerical features
++--------------+---------------+
+               |
+               v
++------------------------------+
+|  Processed Datasets          |
+|  data/processed/*.csv         |
+|  - Cleaned and feature-rich datasets
+|  - Ready for analysis and modeling
++--------------+---------------+
+               |
+               v
++------------------------------+
+|  Exploratory Data Analysis (EDA) & Visualization |
+|  src/acis_insurance_analytics/eda/*
+|  src/acis_insurance_analytics/viz/plots.py
+|  Scripts: scripts/run_eda.py
+|  - Descriptive stats (Loss Ratios, Claim Frequency/Severity)
+|  - Univariate, bivariate, temporal analyses
+|  - Outlier detection & data distribution checks
+|  - Visualizations: histograms, boxplots, correlation heatmaps, trends
++--------------+---------------+
+               |
+               v
++------------------------------+
+|  Statistical Testing / Hypotheses |
+|  src/acis_insurance_analytics/hypothesis/tests.py
+|  src/acis_insurance_analytics/hypothesis/metrics.py
+|  Scripts: scripts/run_hypothesis_tests.py
+|  - A/B testing: risk by province, zip code, gender
+|  - KPIs: Claim Frequency, Claim Severity, Margin
+|  - Statistical tests: t-test, chi-square, ANOVA
+|  - Results feed segmentation strategy & business recommendations
++--------------+---------------+
+               |
+               v
++------------------------------+
+|  Predictive Modeling         |
+|  src/acis_insurance_analytics/models/train.py
+|  src/acis_insurance_analytics/models/predict.py
+|  Scripts: scripts/train_models.py, scripts/predict_premiums.py
+|  - Claim Severity Regression (TotalClaims > 0)
+|  - Claim Probability Classification (binary outcome)
+|  - Premium Optimization: Risk-based pricing
+|  - Model evaluation: RMSE, R², Accuracy, Precision, Recall, F1
+|  - Interpretability: SHAP / LIME feature importance
++--------------+---------------+
+               |
+               v
++------------------------------+
+|  Reports & Business Insights |
+|  reports/insight_report.md
+|  reports/executive_summary.md
+|  Scripts: scripts/generate_report.py
+|  - Summarize EDA, hypothesis testing, model results
+|  - Highlight key risk factors & low-risk segments
+|  - Actionable recommendations: premium adjustments, marketing focus
++------------------------------+
+
 ```
