@@ -13,7 +13,7 @@ def load_config(path: str | None = None) -> dict:
     if path is None:
         from insurance_analytics.utils.project_root import get_project_root
         path = get_project_root() / "configs" / "data.yaml"
-
+        print("መብት ነው ዎግባ ",path)
     path = Path(path)
 
     try:
