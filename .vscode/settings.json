@@ -1,0 +1,4 @@
+{
+  "python.analysis.extraPaths": ["./src", "./insurance_analytics"],
+  "python.testing.unittestArgs": ["-v", "-s", "./tests", "-p", "test_*.py"]
+}
