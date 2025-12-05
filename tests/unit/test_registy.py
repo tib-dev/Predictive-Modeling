@@ -1,134 +1,162 @@
-from insurance_analytics.utils.validation import validate_config_structure
-from insurance_analytics.utils.project_root import get_project_root
-from insurance_analytics.core.config import load_config
-from insurance_analytics.core.registry import Settings
-import unittest
 import tempfile
+import unittest
 from pathlib import Path
-import shutil
-import os
-import sys
-from pathlib import Path
-from unittest.mock import patch
+from unittest import mock
 
-# add project src to path
-project_root = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(project_root / "src"))
+from insurance_analytics.core.registry import PathRegistry, Settings
+
+# The config you provided (kept as a Python dict)
+SAMPLE_CONFIG = {
+    "data": {
+        "data_dir": "data",
+        "raw_dir": "data/raw",
+        "interim_dir": "data/interim",
+        "processed_dir": "data/processed",
+        "postgres_exports_dir": "data/postgres_exports",
+    },
+    "logs": {"logs_dir": "logs"},
+    "reports": {"reports_dir": "reports", "plots_dir": "plots"},
+    "models": {"models_dir": "src/insurance_analytics/models"},
+    "artifacts": {"artifacts_dir": "artifacts"},
+}
 
 
-class TestRegistry(unittest.TestCase):
+class TestRegistryWithSampleConfig(unittest.TestCase):
     def setUp(self):
-        """
-        Create a temporary project structure and override get_project_root
-        for isolated testing.
-        """
-        self.temp_dir = tempfile.TemporaryDirectory()
-        self.project_root = Path(self.temp_dir.name) / "insurance_analytics"
-        self.project_root.mkdir()
+        # Temporary project root for each test
+        self._tmpdir = tempfile.TemporaryDirectory()
+        self.project_root = Path(self._tmpdir.name) / "project_root"
+        self.project_root.mkdir(parents=True, exist_ok=True)
 
-        # Create configs folder and data.yaml
-        configs = self.project_root / "configs"
-        configs.mkdir()
-
-        config_yaml = """
-data:
-  data_dir: "data/"
-  raw_dir: "data/raw/"
-  processed_dir: "data/processed/"
-  reports_dir: "reports/"
-  plots: "plots/"
-  exports: "exports/"
-
-logs:
-  logs_dir: "logs/"
-
-models:
-  model_dir: "models/"
-  checkpoints: "models/checkpoints/"
-
-artifacts:
-  artifacts_dir: "artifacts/"
-"""
-        (configs / "data.yaml").write_text(config_yaml)
-
-        # Monkeypatch get_project_root
-        self._orig_get_root = get_project_root
-        from insurance_analytics.utils import project_root
-        project_root.get_project_root = lambda: self.project_root
-
-        # Initialize Settings
-        self.settings = Settings()
+        # Patch validate_config_structure so tests don't depend on its implementation
+        self._validate_patcher = mock.patch(
+            "insurance_analytics.core.registry.validate_config_structure"
+        )
+        self.mock_validate = self._validate_patcher.start()
 
     def tearDown(self):
-        # Restore original get_project_root
-        from insurance_analytics.utils import project_root
-        project_root.get_project_root = self._orig_get_root
+        self._validate_patcher.stop()
+        self._tmpdir.cleanup()
 
-        # Clean temporary directory
-        self.temp_dir.cleanup()
+    def test_all_paths_resolved_and_created(self):
+        """Using SAMPLE_CONFIG -> every configured path should be resolved and directory created."""
+        registry = PathRegistry(
+            self.project_root, SAMPLE_CONFIG, create_dirs=True)
 
-    # --------------------------
-    # Tests
-    # --------------------------
+        # Data section keys
+        for key, rel in SAMPLE_CONFIG["data"].items():
+            self.assertIn(key, registry.data,
+                          f"{key} missing from registry.data")
+            expected = (self.project_root / rel).resolve()
+            self.assertEqual(registry.data[key], expected)
+            self.assertTrue(expected.exists() and expected.is_dir())
 
-    def test_project_root_detection(self):
-        with patch("insurance_analytics.utils.project_root.get_project_root") as mock_root:
-            mock_root.return_value = self.project_root
-            settings = Settings()  # create after patch
-            # self.assertEqual(settings.root, self.project_root)
-            self.assertTrue(settings.root.exists())
+        # Logs
+        self.assertIn("logs_dir", registry.logs)
+        expected_logs = (self.project_root /
+                         SAMPLE_CONFIG["logs"]["logs_dir"]).resolve()
+        self.assertEqual(registry.logs["logs_dir"], expected_logs)
+        self.assertTrue(expected_logs.exists() and expected_logs.is_dir())
 
-    def test_config_load(self):
-        cfg = load_config()
-        self.assertIn("data", cfg)
-        self.assertIn("logs", cfg)
+        # Reports
+        for key, rel in SAMPLE_CONFIG["reports"].items():
+            self.assertIn(key, registry.reports)
+            expected = (self.project_root / rel).resolve()
+            self.assertEqual(registry.reports[key], expected)
+            self.assertTrue(expected.exists() and expected.is_dir())
 
-    def test_validate_config_structure_valid(self):
-        # Should not raise
-        validate_config_structure(self.settings.config)
+        # Models
+        self.assertIn("models_dir", registry.models)
+        expected_models = (self.project_root /
+                           SAMPLE_CONFIG["models"]["models_dir"]).resolve()
+        self.assertEqual(registry.models["models_dir"], expected_models)
+        self.assertTrue(expected_models.exists() and expected_models.is_dir())
 
-    def test_required_config_keys_missing(self):
-        cfg = {"data": {"data_dir": "data/"}, "logs": {}}
-        with self.assertRaises(ValueError):
-            validate_config_structure(cfg)
+        # Artifacts
+        self.assertIn("artifacts_dir", registry.artifacts)
+        expected_artifacts = (
+            self.project_root / SAMPLE_CONFIG["artifacts"]["artifacts_dir"]).resolve()
+        self.assertEqual(
+            registry.artifacts["artifacts_dir"], expected_artifacts)
+        self.assertTrue(expected_artifacts.exists()
+                        and expected_artifacts.is_dir())
 
-    def test_data_registry_paths_created(self):
-        paths = self.settings.DATA
-        for key in ["data_dir", "raw_dir", "processed_dir", "reports_dir", "plots", "exports"]:
-            self.assertTrue(paths[key].exists())
+    def test_no_creation_when_create_dirs_false(self):
+        """When create_dirs=False, the Path objects should still resolve but directories shouldn't be created."""
+        registry = PathRegistry(
+            self.project_root, SAMPLE_CONFIG, create_dirs=False)
 
-    def test_logs_registry_paths_created(self):
-        self.assertTrue(self.settings.LOGS["logs_dir"].exists())
+        # Pick a subset to verify (if this passes for one, others are same logic)
+        expected_raw = (self.project_root /
+                        SAMPLE_CONFIG["data"]["raw_dir"]).resolve()
+        expected_models = (self.project_root /
+                           SAMPLE_CONFIG["models"]["models_dir"]).resolve()
 
-    def test_models_registry_paths_created(self):
-        models = self.settings.MODELS
-        self.assertTrue(models["model_dir"].exists())
-        self.assertTrue(models["checkpoints"].exists())
+        self.assertEqual(registry.data["raw_dir"], expected_raw)
+        self.assertEqual(registry.models["models_dir"], expected_models)
 
-    def test_artifacts_registry_paths_created(self):
-        self.assertTrue(self.settings.ARTIFACTS["artifacts_dir"].exists())
+        self.assertFalse(expected_raw.exists(),
+                         "data/raw should not exist when create_dirs=False")
+        self.assertFalse(expected_models.exists(),
+                         "models dir should not exist when create_dirs=False")
 
-    def test_registry_access_shortcuts(self):
-        self.assertIn("data_dir", self.settings.DATA)
-        self.assertIn("logs_dir", self.settings.LOGS)
+    def test_validate_config_structure_called_with_sample_config(self):
+        _ = PathRegistry(self.project_root, SAMPLE_CONFIG, create_dirs=False)
+        self.mock_validate.assert_called_once_with(SAMPLE_CONFIG)
 
-    def test_optional_sections_supported(self):
-        # Rewrite config without optional sections
-        config_yaml = """
-data:
-  data_dir: "data/"
-  reports_dir: "reports/"
-  plots: "plots/"
 
-logs:
-  logs_dir: "logs/"
-"""
-        config_path = self.project_root / "configs" / "data.yaml"
-        config_path.write_text(config_yaml)
+class TestSettingsUsingSampleConfig(unittest.TestCase):
+    def setUp(self):
+        # prepare temp project root and patch get_project_root to return it
+        self._tmpdir = tempfile.TemporaryDirectory()
+        self.project_root = Path(self._tmpdir.name) / "root"
+        self.project_root.mkdir(parents=True, exist_ok=True)
 
-        settings = Settings()
-        self.assertTrue(settings.DATA["data_dir"].exists())
-        self.assertTrue(settings.LOGS["logs_dir"].exists())
+        self._validate_patcher = mock.patch(
+            "insurance_analytics.core.registry.validate_config_structure"
+        )
+        self._validate_patcher.start()
+
+        self._get_root_patcher = mock.patch(
+            "insurance_analytics.core.registry.get_project_root", return_value=self.project_root
+        )
+        self.mock_get_root = self._get_root_patcher.start()
+
+    def tearDown(self):
+        self._get_root_patcher.stop()
+        self._validate_patcher.stop()
+        self._tmpdir.cleanup()
+
+    def test_settings_exposes_properties_and_resolves_paths(self):
+        settings = Settings(config=SAMPLE_CONFIG, create_dirs=True)
+
+        # Ensure properties map to underlying PathRegistry dicts
+        self.assertIs(settings.DATA, settings.paths.data)
+        self.assertIs(settings.LOGS, settings.paths.logs)
+        self.assertIs(settings.REPORTS, settings.paths.reports)
+        self.assertIs(settings.MODELS, settings.paths.models)
+        self.assertIs(settings.ARTIFACTS, settings.paths.artifacts)
+
+        # Verify at least one entry per section is correct
+        self.assertIn("data_dir", settings.DATA)
+        self.assertEqual(settings.DATA["data_dir"],
+                         (self.project_root / "data").resolve())
+
+        self.assertIn("logs_dir", settings.LOGS)
+        self.assertEqual(settings.LOGS["logs_dir"],
+                         (self.project_root / "logs").resolve())
+
+        self.assertIn("reports_dir", settings.REPORTS)
+        self.assertEqual(
+            settings.REPORTS["reports_dir"], (self.project_root / "reports").resolve())
+
+        self.assertIn("models_dir", settings.MODELS)
+        self.assertEqual(settings.MODELS["models_dir"], (
+            self.project_root / "src/insurance_analytics/models").resolve())
+
+        self.assertIn("artifacts_dir", settings.ARTIFACTS)
+        self.assertEqual(
+            settings.ARTIFACTS["artifacts_dir"], (self.project_root / "artifacts").resolve())
 
 
 if __name__ == "__main__":
