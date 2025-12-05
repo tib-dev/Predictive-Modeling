@@ -1,0 +1,285 @@
+Metadata-Version: 2.4
+Name: insurance_analytics
+Version: 0.1.0
+Summary: Insurance Risk Analytics: End-to-end data analysis, modeling, and reporting.
+Author-email: "Tibebu K." <wise.tibec@gmail.com>
+License: MIT
+Project-URL: Homepage, https://github.com/tib-dev/preditctive-modeling
+Project-URL: Documentation, https://github.com/tib-dev/preditctive-modeling/docs
+Project-URL: Source, https://github.com/tib-dev/preditctive-modeling
+Keywords: insurance,analytics,machine-learning,risk,predictive-modeling
+Classifier: Programming Language :: Python :: 3.13
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: <4.0,>=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: numpy
+Requires-Dist: pandas
+Requires-Dist: pyyaml
+Requires-Dist: python-dateutil
+Requires-Dist: scikit-learn
+Requires-Dist: matplotlib
+Requires-Dist: seaborn
+Requires-Dist: plotly
+Requires-Dist: reportlab
+Requires-Dist: python-dotenv
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: pytest-cov; extra == "dev"
+Requires-Dist: black; extra == "dev"
+Requires-Dist: isort; extra == "dev"
+Requires-Dist: flake8; extra == "dev"
+Requires-Dist: pre-commit; extra == "dev"
+Requires-Dist: mypy; extra == "dev"
+Requires-Dist: codecov; extra == "dev"
+Provides-Extra: fast
+Requires-Dist: rapidfuzz; extra == "fast"
+
+# Insurance Risk Analytics & Predictive Modeling — ACIS Project
+
+Analyze historical car insurance data from AlphaCare Insurance Solutions (ACIS) in South Africa to uncover low-risk segments, optimize premiums, and support data-driven marketing strategies.
+
+---
+
+## Table of Contents
+
+- [Project Overview](#project-overview)
+- [Business Objective](#business-objective)
+- [Dataset Overview](#dataset-overview)
+- [Folder Structure](#folder-structure)
+- [Architecture](#architecture)
+- [Setup & Installation](#setup--installation)
+- [Tasks Completed](#tasks-completed)
+- [Technologies Used](#technologies-used)
+- [Key Insights](#key-insights)
+
+---
+
+## Project Overview
+
+This project covers end-to-end insurance risk analytics and predictive modeling:
+
+- Understanding historical insurance policies, claims, and premiums
+- Exploratory Data Analysis (EDA) to identify patterns and outliers
+- Statistical hypothesis testing to validate risk drivers
+- Feature engineering and data preprocessing
+- Predictive modeling for:
+  - Claim severity
+  - Premium optimization
+  - Probability of claim occurrence
+- Visualization and reporting of insights for business strategy
+
+---
+
+## Business Objective
+
+AlphaCare Insurance Solutions aims to:
+
+- Identify low-risk segments for targeted marketing
+- Optimize premiums to attract new clients while maintaining profitability
+- Understand key factors driving claims and losses
+- Support strategic decisions for product design and pricing
+
+---
+
+## Dataset Overview
+
+**Historical Insurance Data (Feb 2014 – Aug 2015):**
+
+| Column                | Description                                      |
+| --------------------- | ------------------------------------------------ |
+| PolicyID              | Unique insurance policy ID                       |
+| TransactionMonth      | Month of policy transaction                      |
+| Gender, MaritalStatus | Client demographics                              |
+| Province, PostalCode   | Client location                                  |
+| VehicleType, Make, Model | Vehicle details                                |
+| TotalPremium           | Premium paid                                     |
+| TotalClaims            | Claim amount                                     |
+| CalculatedPremiumPerTerm | Premium per term                               |
+| SumInsured             | Coverage amount                                  |
+| CoverType, Product     | Insurance plan details                            |
+
+- Includes policy, client, location, vehicle, plan, payment, and claim data
+- Data stored as CSV files for reproducibility
+
+---
+
+## Folder Structure
+
+```text
+ACIS-Insurance-Risk-Analytics/
+├── .github/                         # GitHub automation & CI/CD
+│   └── workflows/
+│       ├── ci.yml                   # Continuous Integration (unit tests, lint, smoke tests)
+│       └── codeql.yml               # Security/static analysis via CodeQL
+├── configs/                         # Configuration files for reproducible runs
+│   ├── data.yaml                    # Paths to raw/interim/processed datasets
+│   ├── modeling.yaml                # Model hyperparameters and training settings
+│   └── dvc_remote.yaml              # DVC remote storage configuration
+├── data/                             # All datasets; tracked with DVC for reproducibility
+│   ├── raw/                         # Original unprocessed CSVs or source files
+│   ├── interim/                     # Cleaned/partially processed files ready for analysis
+│   ├── processed/                   # Final datasets used for modeling
+│   └── postgres_exports/            # Exports or snapshots from PostgreSQL if needed
+├── docs/                             # Documentation for project methodology and outputs
+│   ├── README_project_overview.md   # High-level project description and objectives
+│   ├── eda_methodology.md           # Exploratory Data Analysis approaches
+│   ├── hypothesis_testing.md        # Statistical testing methodology
+│   ├── modeling_pipeline.md         # ML modeling steps and rationale
+│   ├── feature_engineering.md       # Features derived, transformations applied
+│   └── insights_report_template.md  # Template for final business insights report
+├── notebooks/                        # Interactive Jupyter notebooks
+│   ├── exploration/                  # EDA notebooks
+│   │   ├── data_overview.ipynb      # Data loading, initial summary statistics
+│   │   └── eda_visualizations.ipynb # Plots, distribution checks, temporal trends
+│   └── analysis/                     # Hypothesis testing & modeling
+│       ├── hypothesis_tests.ipynb   # A/B tests, chi-square, ANOVA, t-tests
+│       └── model_building.ipynb     # Feature prep, model training, evaluation
+├── reports/                          # Final deliverables
+│   ├── insight_report.md/           # Detailed analytics report with findings
+│   └── executive_summary.md/        # High-level recommendations for business
+├── scripts/                          # Standalone Python scripts for automation
+│   ├── __init__.py
+│   ├── load_data.py                 # Load raw data into Python objects
+│   ├── clean_data.py                # Cleaning functions for missing/erroneous values
+│   ├── feature_engineering.py       # Derive new features for modeling
+│   ├── run_eda.py                   # Script to execute all EDA tasks
+│   ├── run_hypothesis_tests.py      # Run all statistical hypothesis tests
+│   ├── train_models.py              # Train machine learning models
+│   ├── predict_premiums.py          # Predict optimized premiums using trained models
+│   └── generate_report.py           # Generate final report in markdown or PDF
+├── src/acis_insurance_analytics/     # Core modular Python package
+│   ├── __init__.py
+│   ├── config.py                    # Centralized config management (paths, parameters)
+│   ├── data/                         # Data handling functions
+│   │   ├── __init__.py
+│   │   ├── loaders.py               # Load datasets from CSV/DVC/local DB
+│   │   └── cleaners.py              # Cleaning routines, missing value handling
+│   ├── features/                     # Feature engineering modules
+│   │   ├── __init__.py
+│   │   └── build_features.py        # Generate derived features (vehicle_age, risk_flags)
+│   ├── models/                       # ML model building & inference
+│   │   ├── __init__.py
+│   │   ├── train.py                 # Train ML models (regression/classification)
+│   │   └── predict.py               # Use models to predict claims/premiums
+│   ├── hypothesis/                   # Statistical testing modules
+│   │   ├── __init__.py
+│   │   ├── tests.py                 # Functions to perform A/B tests, chi-square, t-tests
+│   │   └── metrics.py               # KPI calculations: claim frequency, severity, margin
+│   ├── viz/                          # Visualization utilities
+│   │   ├── __init__.py
+│   │   ├── plots.py                 # EDA and model performance plots
+│   │   └── dashboard.py             # Optional: assemble multiple plots into summary dashboards
+│   └── utils/                        # Utility functions
+│       ├── __init__.py
+│       ├── helpers.py               # General helper functions
+│       ├── io_utils.py              # File I/O helpers
+│       └── stats_utils.py           # Statistical functions used across tests/models
+├── tests/                           # Unit & integration tests
+│   ├── unit/
+│   │   ├── test_loaders.py
+│   │   ├── test_cleaners.py
+│   │   ├── test_features.py
+│   │   ├── test_hypothesis.py
+│   │   └── test_models.py
+│   └── integration/
+│       ├── test_full_pipeline.py     # Test full flow from data to predictions
+│       └── test_dvc_integration.py   # Ensure DVC-tracked data reproducibility
+├── requirements.txt                  # Python dependencies for production
+├── requirements-dev.txt              # Additional dev/test dependencies
+├── pyproject.toml                    # Project metadata for packaging
+├── README.md                         # Project overview, instructions
+├── .env                              # Environment variables (DB creds, API keys)
+└── .gitignore                        # Ignore unnecessary files for git
+
+```
+
+## Architecture
+```text
++------------------------------+
+|  Raw Insurance Data          |
+|  (Policies, Clients, Cars,   |
+|   Claims, Premiums)          |
+|  Location: data/raw/         |
++--------------+---------------+
+               |
+               v
++------------------------------+
+|  Data Loading & Initial Prep |
+|  src/acis_insurance_analytics/data/loaders.py
+|  Scripts: scripts/load_data.py
+|  - Load raw CSVs or database exports
+|  - Validate schema & datatypes
+|  - Initial missing value checks
++--------------+---------------+
+               |
+               v
++------------------------------+
+|  Data Cleaning & Feature Engineering |
+|  src/acis_insurance_analytics/data/cleaners.py
+|  src/acis_insurance_analytics/features/build_features.py
+|  Scripts: scripts/clean_data.py, scripts/feature_engineering.py
+|  - Handle missing/erroneous values
+|  - Derive features: vehicle age, claim flags, risk indicators
+|  - Encode categorical variables
+|  - Normalize/scale numerical features
++--------------+---------------+
+               |
+               v
++------------------------------+
+|  Processed Datasets          |
+|  data/processed/*.csv         |
+|  - Cleaned and feature-rich datasets
+|  - Ready for analysis and modeling
++--------------+---------------+
+               |
+               v
++------------------------------+
+|  Exploratory Data Analysis (EDA) & Visualization |
+|  src/acis_insurance_analytics/eda/*
+|  src/acis_insurance_analytics/viz/plots.py
+|  Scripts: scripts/run_eda.py
+|  - Descriptive stats (Loss Ratios, Claim Frequency/Severity)
+|  - Univariate, bivariate, temporal analyses
+|  - Outlier detection & data distribution checks
+|  - Visualizations: histograms, boxplots, correlation heatmaps, trends
++--------------+---------------+
+               |
+               v
++------------------------------+
+|  Statistical Testing / Hypotheses |
+|  src/acis_insurance_analytics/hypothesis/tests.py
+|  src/acis_insurance_analytics/hypothesis/metrics.py
+|  Scripts: scripts/run_hypothesis_tests.py
+|  - A/B testing: risk by province, zip code, gender
+|  - KPIs: Claim Frequency, Claim Severity, Margin
+|  - Statistical tests: t-test, chi-square, ANOVA
+|  - Results feed segmentation strategy & business recommendations
++--------------+---------------+
+               |
+               v
++------------------------------+
+|  Predictive Modeling         |
+|  src/acis_insurance_analytics/models/train.py
+|  src/acis_insurance_analytics/models/predict.py
+|  Scripts: scripts/train_models.py, scripts/predict_premiums.py
+|  - Claim Severity Regression (TotalClaims > 0)
+|  - Claim Probability Classification (binary outcome)
+|  - Premium Optimization: Risk-based pricing
+|  - Model evaluation: RMSE, R², Accuracy, Precision, Recall, F1
+|  - Interpretability: SHAP / LIME feature importance
++--------------+---------------+
+               |
+               v
++------------------------------+
+|  Reports & Business Insights |
+|  reports/insight_report.md
+|  reports/executive_summary.md
+|  Scripts: scripts/generate_report.py
+|  - Summarize EDA, hypothesis testing, model results
+|  - Highlight key risk factors & low-risk segments
+|  - Actionable recommendations: premium adjustments, marketing focus
++------------------------------+
+
+```
