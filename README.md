@@ -70,7 +70,7 @@ AlphaCare Insurance Solutions aims to:
 ## Folder Structure
 
 ```text
-ACIS-Insurance-Risk-Analytics/
+Insurance-Risk-Analytics/
 ├── .github/                         # GitHub automation & CI/CD
 │   └── workflows/
 │       ├── ci.yml                   # Continuous Integration (unit tests, lint, smoke tests)
