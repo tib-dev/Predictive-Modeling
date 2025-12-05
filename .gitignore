@@ -6,6 +6,7 @@ __pycache__/
 .env.local
 .env.*.local
 .DS_Store
+.vscode
 logs/
 *.log
 data/
