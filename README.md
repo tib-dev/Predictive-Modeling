@@ -111,7 +111,7 @@ Insurance-Risk-Analytics/
 │   ├── train_models.py              # Train machine learning models
 │   ├── predict_premiums.py          # Predict optimized premiums using trained models
 │   └── generate_report.py           # Generate final report in markdown or PDF
-├── src/acis_insurance_analytics/     # Core modular Python package
+├── src/insurance_analytics/     # Core modular Python package
 │   ├── __init__.py
 │   ├── config.py                    # Centralized config management (paths, parameters)
 │   ├── data/                         # Data handling functions
