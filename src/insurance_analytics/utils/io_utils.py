@@ -37,6 +37,7 @@ def write_csv(df, path):
     try:
         os.makedirs(os.path.dirname(path), exist_ok=True)
         df.to_csv(path, index=False)
+        print(f"[IO] CSV file is saved sucessfully")
     except Exception as e:
         print(f"[IO] Failed to write CSV: {e}")
 
