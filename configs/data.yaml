@@ -1,16 +1,14 @@
 data:
   data_dir: "data"
   raw_dir: "data/raw"
-  interim_dir: "data/interim"
   processed_dir: "data/processed"
-  postgres_exports_dir: "data/postgres_exports"
 
 logs:
   logs_dir: "logs"
 
 reports:
   reports_dir: "reports"
-  plots_dir: "plots"
+  plots_dir: "reports/plots"
 
 models:
   models_dir: "src/insurance_analytics/models"
