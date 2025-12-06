@@ -1,0 +1,7 @@
+stages:
+  track_raw_data:
+    cmd: dvc add data/raw/MachineLearningRating_v3.txt
+    deps:
+      - data/raw/MachineLearningRating_v3.txt
+    outs:
+      - data/raw/MachineLearningRating_v3.txt.dvc
