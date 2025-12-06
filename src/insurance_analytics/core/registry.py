@@ -4,47 +4,61 @@ from insurance_analytics.utils.project_root import get_project_root
 from insurance_analytics.utils.validation import validate_config_structure
 from insurance_analytics.core.config import load_config
 
+# Default structure if keys are missing in config
+DEFAULT_STRUCTURE = {
+    "data": {
+        "data_dir": "data",
+        "raw_dir": "data/raw",
+        "processed_dir": "data/processed",
+    },
+    "reports": {
+        "reports_dir": "reports",
+        "plots": "reports/plots",
+    },
+    
+    "logs": {"logs_dir": "logs"},
+    "models": {
+        "model_dir": "src/acis_insurance_analytics/models",
+        "checkpoints": "src/acis_insurance_analytics/models/checkpoints"
+    },
+    "artifacts": {"artifacts_dir": "artifacts"},
+    "docs": {"docs_dir": "docs"},
+    "notebooks": {"notebooks_dir": "notebooks"},
+    "scripts": {"scripts_dir": "scripts"},
+    "tests": {"tests_dir": "tests"},
+}
+
 
 class PathRegistry:
-    """
-    Reads paths from the provided config and resolves them relative to root.
-    Only creates directories for keys present in the config (no hard-coded defaults).
-    """
+    """Read paths from config + defaults and resolve relative to root."""
 
-    def __init__(self, root: Path, config: Dict, create_dirs: bool = True):
-        self.root = root.resolve()
-        self.config = config or {}
+    def __init__(self, root: Path, config: Optional[Dict] = None, create_dirs: bool = True):
+        self.root = Path(root).resolve()
         self._create_dirs = create_dirs
 
-        # validate early
+        # Merge defaults with config
+        merged_config = {}
+        config = config or {}
+        for section, defaults in DEFAULT_STRUCTURE.items():
+            section_cfg = config.get(section, {})
+            merged_section = dict(defaults)
+            # YAML overwrites defaults if present
+            merged_section.update(section_cfg)
+            merged_config[section] = merged_section
+        self.config = merged_config
+
+        # Validate merged config
         validate_config_structure(self.config)
 
-        # sections expected by tests and code
-        self.data = self._paths_from_section("data")
-        self.logs = self._paths_from_section("logs")
-        self.reports = self._paths_from_section("reports")
-        self.models = self._paths_from_section("models")
-        self.artifacts = self._paths_from_section("artifacts")
-        self.docs = self._paths_from_section("docs")
-        self.notebooks = self._paths_from_section("notebooks")
-        self.scripts = self._paths_from_section("scripts")
-        self.tests = self._paths_from_section("tests")
+        # Create sections dynamically
+        for section, keys in DEFAULT_STRUCTURE.items():
+            setattr(self, section, self._init_section(
+                section, self.config[section]))
 
-    def _paths_from_section(self, section: str) -> Dict[str, Path]:
-        """
-        Convert a config section (a dict of name -> relative path) into resolved Path objects.
-        Only processes keys that exist in the config for that section.
-        """
+    def _init_section(self, section: str, section_config: Dict[str, str]) -> Dict[str, Path]:
+        """Resolve section paths and create directories."""
         container: Dict[str, Path] = {}
-        section_data = self.config.get(section, {}) or {}
-
-        # support legacy string value
-        if isinstance(section_data, str):
-            section_data = {f"{section}_dir": section_data}
-
-        for key, rel_path in section_data.items():
-            if not rel_path:
-                continue
+        for key, rel_path in section_config.items():
             path = (self.root / rel_path).resolve()
             if self._create_dirs:
                 path.mkdir(parents=True, exist_ok=True)
@@ -53,15 +67,10 @@ class PathRegistry:
 
 
 class Settings:
-    """
-    Main settings object that loads config (from YAML if none provided)
-    and exposes resolved paths.
-    """
+    """Main settings object exposing path sections as properties."""
 
-    def __init__(
-        self, root: Optional[Path] = None, config: Optional[Dict] = None, create_dirs: bool = True
-    ):
-        self.root = (root or get_project_root()).resolve()
+    def __init__(self, root: Optional[Path] = None, config: Optional[Dict] = None, create_dirs: bool = True):
+        self.root = Path(root).resolve() if root else get_project_root()
         self.config = config or load_config()
         self.paths = PathRegistry(
             self.root, self.config, create_dirs=create_dirs)
@@ -76,7 +85,7 @@ class Settings:
 
     @property
     def REPORTS(self) -> Dict[str, Path]:
-        return self.paths.reports
+        return self.paths.reports  # reports_dir is inside data
 
     @property
     def MODELS(self) -> Dict[str, Path]:
@@ -101,3 +110,7 @@ class Settings:
     @property
     def TESTS(self) -> Dict[str, Path]:
         return self.paths.tests
+
+
+# global settings instance
+settings = Settings()
