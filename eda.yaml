@@ -1,0 +1,13 @@
+stages:
+  process:
+    cmd: python src/insurance_analytics/reports/report_generator.py --config config/data.yaml
+    deps:
+      - scripts/eda_report_generator.py
+      - data/raw/MachineLearningRating_v3.txt
+      - config/data.yaml
+    out:
+      - reports/eda_reports.md
+      - reports/plots/hist_totalpremium.png
+      - reports/plots/province_count.png
+      - reports/plots/loss_ratio_by_province.png
+      - reports/plots/claims_vs_premium_vehicle.png

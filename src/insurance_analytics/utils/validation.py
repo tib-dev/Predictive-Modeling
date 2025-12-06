@@ -1,11 +1,12 @@
 # src/insurance_analytics/utils/validation.py
-from typing import Dict, List
+from typing import Dict
 
 REQUIRED_KEYS = {
-    # tests expect these entries. If your tests change, update this mapping.
-    "data": ["data_dir", "raw_dir", "interim_dir", "processed_dir", "reports_dir"],
-    "models": ["model_dir"],
-    # other sections may be optional; add keys here if tests require them
+    "data": ["data_dir", "raw_dir", "processed_dir"],
+    "logs": ["logs_dir"],
+    "reports": ["reports_dir", "plots_dir"],
+    "models": ["models_dir"],
+    "artifacts": ["artifacts_dir"],
 }
 
 
@@ -23,7 +24,6 @@ def validate_config_structure(config: Dict) -> None:
         if section_data is None:
             raise ValueError(f"Missing '{section}' section in data.yaml")
 
-        # allow section_data to be a mapping; if it's a string, that's an error for required keys
         if not isinstance(section_data, dict):
             raise ValueError(
                 f"Expected '{section}' section to be a mapping (dict).")
