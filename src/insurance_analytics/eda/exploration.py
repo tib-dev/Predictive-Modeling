@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+from typing import Optional
 
 # -------------------------------------------------------------
 # 1) STRUCTURAL SUMMARY
@@ -21,7 +21,7 @@ def dataset_overview(df: pd.DataFrame):
 
     print("\n--- Total Missing Values (%) ---")
     print((df.isna().mean() * 100).sort_values(ascending=False).head(20))
-
+    df=df.head(5)
     return df
 
 
@@ -32,8 +32,27 @@ def duplicated_rows(df: pd.DataFrame):
     dup_count = df.duplicated().sum()
     print(f"Duplicated rows: {dup_count}")
     return dup_count
+# -------------------------------------------------------------
+# 2) MISSING DATA INSPECTION
+# -------------------------------------------------------------
+def summarize_missing(df: pd.DataFrame, top_n: Optional[int] = 20) -> pd.Series:
+    """
+    Compute the percentage of missing values per column and return the top N columns with highest missing rates.
 
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The dataset to analyze.
+    top_n : int, optional
+        Number of top columns to return. Defaults to 20.
 
+    Returns
+    -------
+    pd.Series
+        Missing values as a fraction of total rows, sorted descending.
+    """
+    missing_pct = df.isna().mean().sort_values(ascending=False)
+    return missing_pct.head(top_n)
 # -------------------------------------------------------------
 # 3) OUTLIER INSPECTION
 # -------------------------------------------------------------
