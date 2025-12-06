@@ -311,3 +311,107 @@ def plot_claims_vs_premium_by_vehicle(df: pd.DataFrame, save_path: Path = None):
     if save_path:
         plt.savefig(save_path, dpi=300)
     plt.show()
+
+# src/insurance_analytics/viz/outliers.py
+
+
+sns.set_theme(style="whitegrid")
+
+# -------------------------------------------------------------
+# Boxplot for Outlier Detection
+# -------------------------------------------------------------
+
+
+def boxplot_outliers(df: pd.DataFrame, column: str, save_path: Path = None):
+    """
+    Visualize outliers in a numeric column using a boxplot.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Cleaned dataset
+    column : str
+        Column name to visualize
+    save_path : Path, optional
+        Path to save the plot image
+    """
+    plt.figure(figsize=(10, 6))
+    ax = sns.boxplot(x=df[column], color="lightcoral")
+    ax.set_title(f"Boxplot of {column} (Outlier Detection)")
+    ax.set_xlabel(column)
+    plt.tight_layout()
+
+    if save_path:
+        plt.savefig(save_path, dpi=300)
+    plt.show()
+
+
+# -------------------------------------------------------------
+# Scatterplot to visualize outliers relative to another variable
+# -------------------------------------------------------------
+def scatter_outliers(df: pd.DataFrame, x_col: str, y_col: str, hue_col: str = None, save_path: Path = None):
+    """
+    Scatter plot highlighting potential outliers relative to another numeric variable.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Cleaned dataset
+    x_col : str
+        Column for x-axis
+    y_col : str
+        Column for y-axis
+    hue_col : str, optional
+        Column to color points by category
+    save_path : Path, optional
+        Path to save the plot image
+    """
+    plt.figure(figsize=(12, 6))
+    ax = sns.scatterplot(x=x_col, y=y_col, hue=hue_col,
+                         data=df, palette="tab10", alpha=0.6)
+    ax.set_title(f"{y_col} vs {x_col} (Outlier Inspection)")
+    plt.tight_layout()
+
+    if save_path:
+        plt.savefig(save_path, dpi=300)
+    plt.show()
+
+
+# -------------------------------------------------------------
+# IQR-based Outlier Highlighting
+# -------------------------------------------------------------
+def highlight_outliers_iqr(df: pd.DataFrame, column: str, save_path: Path = None):
+    """
+    Highlight points outside the IQR range for a numeric column.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Cleaned dataset
+    column : str
+        Column name for outlier detection
+    save_path : Path, optional
+        Path to save the plot
+    """
+    q1 = df[column].quantile(0.25)
+    q3 = df[column].quantile(0.75)
+    iqr = q3 - q1
+    lower = q1 - 1.5 * iqr
+    upper = q3 + 1.5 * iqr
+
+    df['is_outlier'] = (df[column] < lower) | (df[column] > upper)
+
+    plt.figure(figsize=(12, 6))
+    ax = sns.scatterplot(x=df.index, y=df[column], hue=df['is_outlier'], palette={
+                         True: 'red', False: 'blue'})
+    ax.set_title(f"Outlier Highlighting for {column}")
+    ax.set_xlabel("Index")
+    ax.set_ylabel(column)
+    plt.tight_layout()
+
+    if save_path:
+        plt.savefig(save_path, dpi=300)
+    plt.show()
+
+    # Remove temporary column
+    df.drop(columns=['is_outlier'], inplace=True)
