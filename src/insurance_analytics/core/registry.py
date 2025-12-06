@@ -18,8 +18,8 @@ DEFAULT_STRUCTURE = {
     
     "logs": {"logs_dir": "logs"},
     "models": {
-        "model_dir": "src/acis_insurance_analytics/models",
-        "checkpoints": "src/acis_insurance_analytics/models/checkpoints"
+        "model_dir": "src/insurance_analytics/models",
+        "checkpoints": "src/insurance_analytics/models/checkpoints"
     },
     "artifacts": {"artifacts_dir": "artifacts"},
     "docs": {"docs_dir": "docs"},
