@@ -21,7 +21,6 @@ DEFAULT_STRUCTURE = {
         "model_dir": "src/insurance_analytics/models",
         "checkpoints": "src/insurance_analytics/models/checkpoints"
     },
-    "artifacts": {"artifacts_dir": "artifacts"},
     "docs": {"docs_dir": "docs"},
     "notebooks": {"notebooks_dir": "notebooks"},
     "scripts": {"scripts_dir": "scripts"},
@@ -90,10 +89,6 @@ class Settings:
     @property
     def MODELS(self) -> Dict[str, Path]:
         return self.paths.models
-
-    @property
-    def ARTIFACTS(self) -> Dict[str, Path]:
-        return self.paths.artifacts
 
     @property
     def DOCS(self) -> Dict[str, Path]:
