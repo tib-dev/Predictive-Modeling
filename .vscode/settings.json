@@ -1,4 +1,35 @@
 {
+  // Python configuration
   "python.analysis.extraPaths": ["./src", "./insurance_analytics"],
-  "python.testing.unittestArgs": ["-v", "-s", "./tests", "-p", "test_*.py"]
+  "python.testing.unittestArgs": ["-v", "-s", "./tests", "-p", "test_*.py"],
+  "python.testing.unittestEnabled": true,
+  "python.languageServer": "Pylance",
+
+  // File watching & search optimization
+  // "files.watcherExclude": {
+  //   "**/node_modules/**": true,
+  //   "**/.git/**": true,
+  //   "**/.venv/**": true,
+  //   "**/dist/**": true,
+  //   "**/build/**": true
+  // },
+  // "search.exclude": {
+  //   "**/node_modules": true,
+  //   "**/.venv": true,
+  //   "**/dist": true,
+  //   "**/build": true
+  // },
+
+  // // Editor performance tweaks
+  // "editor.formatOnSave": false,
+  // "editor.formatOnType": false,
+  // "editor.formatOnPaste": false,
+  // "editor.minimap.enabled": false,
+  // "workbench.colorTheme": "Default Dark+",
+
+  // Git optimization for large repos
+  "git.enabled": false,
+
+  // Telemetry off
+  "telemetry.telemetryLevel": "off"
 }
