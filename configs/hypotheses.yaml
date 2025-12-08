@@ -1,0 +1,52 @@
+# hypotheses.yaml
+# List of hypothesis entries. Each entry must contain:
+# - feature: column name in dataframe
+# - kpi: KPI column name (ClaimFrequency, ClaimSeverity, Margin)
+# - test_type: chi2 | t | anova
+# - description: short human-readable description
+
+hypotheses:
+  - feature: Province
+    kpi: ClaimFrequency
+    test_type: chi2
+    description: Claim frequency differences across provinces
+
+  - feature: Province
+    kpi: ClaimSeverity
+    test_type: anova
+    description: Claim severity differences across provinces
+
+  - feature: Province
+    kpi: Margin
+    test_type: anova
+    description: Margin differences across provinces
+
+  - feature: PostalCode
+    kpi: ClaimFrequency
+    test_type: chi2
+    description: Claim frequency differences across zip codes
+
+  - feature: PostalCode
+    kpi: ClaimSeverity
+    test_type: anova
+    description: Claim severity differences across zip codes
+
+  - feature: PostalCode
+    kpi: Margin
+    test_type: anova
+    description: Margin differences across zip codes
+
+  - feature: Gender
+    kpi: ClaimFrequency
+    test_type: chi2
+    description: Claim frequency differences by gender
+
+  - feature: Gender
+    kpi: ClaimSeverity
+    test_type: anova
+    description: Claim severity differences by gender
+
+  - feature: Gender
+    kpi: Margin
+    test_type: anova
+    description: Margin differences by gender
